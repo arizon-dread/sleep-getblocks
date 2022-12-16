@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: sleep-getblocks
+  name: sleep-getblocks
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sleep-getblocks
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: sleep-getblocks
+    spec:
+      containers:
+      - image: docker.io/regionorebrolan/sleep-getblocks:v0.2
+        name: sleep-getblocks
+        resources: {}
+        env:
+          - name: DELAY
+            value: "60"
+        ports:
+          - containerPort: 8080
+            protocol: TCP
+            name: http
+status: {}
