@@ -66,7 +66,7 @@ func sleep(c *gin.Context) {
 func getBlocks(c *gin.Context) {
 	xmlReq := models.GetBlocksRequest{}
 	if err := c.BindXML(&xmlReq); err == nil {
-		fmt.Printf("got xml request")
+		fmt.Println("got xml request")
 		//sleep
 		time.Sleep(time.Duration(delay) * time.Second)
 		//keep going
@@ -81,28 +81,17 @@ func getBlocks(c *gin.Context) {
 								<ns3:GetBlocksResponse xmlns:ns2=urn:riv:informationsecurity:authorization:blocking:4 xmlns:ns3=urn:riv:informationsecurity:authorization:blocking:GetBlocksResponder:4 xmlns:ns4=urn:riv:itintegration:registry:1>
 								<ns3:blockHeader>
 									<ns2:result>
-									<ns2:resultCode>OK</ns2:resultCode>
+										<ns2:resultCode>OK</ns2:resultCode>
 									</ns2:result>
 									<ns2:blocks>
-									<ns2:blockId>d34bb78a-7d3c-11ed-a0a1-44af280ae852</ns2:blockId>
-									<ns2:blockType>Outer</ns2:blockType>
-									<ns2:informationCareProviderId>`+careProviderId+`</ns2:informationCareProviderId>
-									<ns2:patientId>
-										<ns2:root>1.2.752.129.2.1.3.1</ns2:root>
-										<ns2:extension>`+ssn+`</ns2:extension>
-									</ns2:patientId>
-									<ns2:ownerId>SERIALNUMBER=SE5565594230-BLM, CN=ws.sparradmin.inera.se, O=Inera AB, L=Stockholm, C=SE</ns2:ownerId>
-									</ns2:blocks>
-									<ns2:blocks>
-									<ns2:blockId>d3f0232e-7d3c-11ed-9ff3-44af280ae852</ns2:blockId>
-									<ns2:blockType>Outer</ns2:blockType>
-									<ns2:informationCareProviderId>`+careProviderId+`</ns2:informationCareProviderId>
-									<ns2:patientId>
-										<ns2:root>1.2.752.129.2.1.3.1</ns2:root>
-										<ns2:extension>`+ssn+`</ns2:extension>
-									</ns2:patientId>
-									<ns2:ownerId>SERIALNUMBER=SE5565594230-BLM, CN=ws.sparradmin.inera.se, O=Inera AB, L=Stockholm, C=SE</ns2:ownerId>
-									</ns2:blocks>
+										<ns2:blockId>d34bb78a-7d3c-11ed-a0a1-44af280ae852</ns2:blockId>
+										<ns2:blockType>Outer</ns2:blockType>
+										<ns2:informationCareProviderId>`+careProviderId+`</ns2:informationCareProviderId>
+										<ns2:patientId>
+											<ns2:root>1.2.752.129.2.1.3.1</ns2:root>
+											<ns2:extension>`+ssn+`</ns2:extension>
+										</ns2:patientId>
+										<ns2:ownerId>SERIALNUMBER=SE5565594230-BLM, CN=ws.sparradmin.inera.se, O=Inera AB, L=Stockholm, C=SE</ns2:ownerId>
 									</ns2:blocks>
 								<ns2:nextCreatedOnOrAfter>2022-12-16T10:35:52.659+01:00</ns2:nextCreatedOnOrAfter>
 								<ns2:latestCancellation>2022-12-14T15:18:51.000+01:00</ns2:latestCancellation>
