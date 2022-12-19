@@ -102,5 +102,6 @@ func getBlocks(c *gin.Context) {
 		}
 	} else {
 		fmt.Printf("Failed to bind xml, %v", err)
+		c.AbortWithError(400, err)
 	}
 }
