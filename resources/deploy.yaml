@@ -20,6 +20,7 @@ spec:
       containers:
       - image: docker.io/regionorebrolan/sleep-getblocks:v0.2
         name: sleep-getblocks
+        imagePullPolicy: Always
         resources: {}
         env:
           - name: DELAY

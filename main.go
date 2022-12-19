@@ -15,10 +15,12 @@ import (
 
 var text string
 var delay int
+var currentTime string
+var latestCancellation string
 
 func main() {
 
-	content, err := ioutil.ReadFile("response.xml")
+	
 	strDelay := os.Getenv("DELAY")
 
 	intDelay, err := strconv.Atoi(strDelay)
@@ -28,13 +30,19 @@ func main() {
 		fmt.Printf("error reading env var DELAY as int, using 60s as delay. Error was %v", err)
 		delay = 60
 	}
-
+	content, err := ioutil.ReadFile("response.xml")
 	if err != nil {
 		fmt.Printf("Could not read file b/c: %v\nWill use static response.\n", err)
 	} else {
-		fmt.Printf("Will use response.xml as response for every request.")
+		fmt.Printf("Will use response.xml as response for every request.\n")
 	}
 	text = string(content)
+
+	datetime := time.Now()
+	tz, err := time.LoadLocation("Europe/Stockholm")
+	currentTime = datetime.In(tz).Format("2006-01-02T03:04:05-07:00")
+	latestCancellation = datetime.Add(-48 * time.Hour).In(tz).Format("2006-01-02T03:04:05-07:00")
+	//fmt.Printf("formated time: %v\n", currentTime)
 
 	router := gin.Default()
 	router.GET("/healthz", healthz)
@@ -93,8 +101,8 @@ func getBlocks(c *gin.Context) {
 										</ns2:patientId>
 										<ns2:ownerId>SERIALNUMBER=SE5565594230-BLM, CN=ws.sparradmin.inera.se, O=Inera AB, L=Stockholm, C=SE</ns2:ownerId>
 									</ns2:blocks>
-								<ns2:nextCreatedOnOrAfter>2022-12-16T10:35:52.659+01:00</ns2:nextCreatedOnOrAfter>
-								<ns2:latestCancellation>2022-12-14T15:18:51.000+01:00</ns2:latestCancellation>
+								<ns2:nextCreatedOnOrAfter>`+currentTime+`</ns2:nextCreatedOnOrAfter>
+								<ns2:latestCancellation>`+latestCancellation+`</ns2:latestCancellation>
 								</ns3:blockHeader>
 							</ns3:GetBlocksResponse>
 							</S:Body>
