@@ -1,4 +1,4 @@
-# Testapplikation för att simulera delay för NCS Cross mot Säkerhetstjänster spärr.
+# Testapplikation för att simulera delay mot Säkerhetstjänster spärr.
 
 * Exempel på att starta container:
 ```
