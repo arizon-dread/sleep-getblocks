@@ -24,4 +24,4 @@ curl -vXPOST http://localhost:8080/GetBlocks -d '<?xml version="1.0"?>
 </s:Envelope>'
 ```
 
-Applikationen kan behöva en reverse-proxy som validerar mTLS-cert från klient-applikationen.
+Applikationen kan behöva en reverse-proxy framför som validerar mTLS-cert från klient-applikationen och sedan skickar trafiken bakåt.
