@@ -1,15 +1,15 @@
 package main
 
 import (
-	"errors"
+	"encoding/json"
+	"encoding/xml"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"gitlab.com/arizon-dread/sleep-getblocks/models"
 )
 
@@ -20,17 +20,16 @@ var latestCancellation string
 
 func main() {
 
-	
 	strDelay := os.Getenv("DELAY")
 
 	intDelay, err := strconv.Atoi(strDelay)
 	if err == nil {
 		delay = intDelay
 	} else {
-		fmt.Printf("error reading env var DELAY as int, using 60s as delay. Error was %v", err)
+		fmt.Printf("error reading env var DELAY as int, using 60s as delay. Error was %v\n", err)
 		delay = 60
 	}
-	content, err := ioutil.ReadFile("response.xml")
+	content, err := os.ReadFile("response.xml")
 	if err != nil {
 		fmt.Printf("Could not read file b/c: %v\nWill use static response.\n", err)
 	} else {
@@ -39,51 +38,67 @@ func main() {
 	text = string(content)
 
 	datetime := time.Now()
-	tz, err := time.LoadLocation("Europe/Stockholm")
+	tz, _ := time.LoadLocation("Europe/Stockholm")
 	currentTime = datetime.In(tz).Format("2006-01-02T03:04:05-07:00")
 	latestCancellation = datetime.Add(-48 * time.Hour).In(tz).Format("2006-01-02T03:04:05-07:00")
 	//fmt.Printf("formated time: %v\n", currentTime)
 
-	router := gin.Default()
-	router.GET("/healthz", healthz)
-	router.POST("/sleep", sleep)
-	router.POST("/GetBlocks", getBlocks)
-	router.Run(":8080")
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /healthz", healthz)
+	mux.HandleFunc("POST /sleep", sleep)
+	mux.HandleFunc("POST /GetBlocks", getBlocks)
+	http.ListenAndServe(":8080", mux)
 }
 
-func healthz(c *gin.Context) {
-	c.Request.Response = &http.Response{Status: "OK - Healthy", StatusCode: 200}
+func healthz(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Healthy"))
 }
 
-func sleep(c *gin.Context) {
-	jsonData := models.Sleep{}
+func sleep(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("could not read body"))
+		return
+	}
 
-	if err := c.BindJSON(&jsonData); err == nil {
-		if jsonData.Seconds > 0 {
+	jsonData := &models.Sleep{}
+	if err = json.Unmarshal(body, jsonData); err == nil {
+		if jsonData.Seconds >= 0 {
 			fmt.Println("got a positive int")
-			time.Sleep(time.Duration(jsonData.Seconds) * time.Second)
+			delay = jsonData.Seconds
+			w.Write([]byte(fmt.Sprintf("setting delay to %vs", delay)))
 		} else {
 			fmt.Println("got a negative int")
-			c.AbortWithError(400, errors.New("Bad request"))
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("expected a positive int"))
+			return
 		}
 	} else {
 		fmt.Printf("got error, %v", err)
-		c.AbortWithError(500, err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("unable to marshal json into go struct"))
+		return
 	}
 }
-func getBlocks(c *gin.Context) {
-	xmlReq := models.GetBlocksRequest{}
-	if err := c.BindXML(&xmlReq); err == nil {
+func getBlocks(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	xmlReq := &models.GetBlocksRequest{}
+	if err := xml.Unmarshal(body, xmlReq); err == nil {
 		fmt.Println("got xml request")
 		//sleep
 		time.Sleep(time.Duration(delay) * time.Second)
 		//keep going
 		if len(text) > 0 {
-			c.String(200, text)
+			w.Write([]byte(text))
 		} else {
 			ssn := xmlReq.Envelope.Body.GetBlocks.PatientId.SSNExtension
 			careProviderId := xmlReq.Envelope.Body.GetBlocks.CareProviderIds
-			c.String(200, `<?xml version=1.0 encoding=UTF-8?>
+			w.Write([]byte(`<?xml version=1.0 encoding=UTF-8?>
 							<S:Envelope xmlns:S=http://schemas.xmlsoap.org/soap/envelope/>
 							<S:Body>
 								<ns3:GetBlocksResponse xmlns:ns2=urn:riv:informationsecurity:authorization:blocking:4 xmlns:ns3=urn:riv:informationsecurity:authorization:blocking:GetBlocksResponder:4 xmlns:ns4=urn:riv:itintegration:registry:1>
@@ -94,22 +109,23 @@ func getBlocks(c *gin.Context) {
 									<ns2:blocks>
 										<ns2:blockId>d34bb78a-7d3c-11ed-a0a1-44af280ae852</ns2:blockId>
 										<ns2:blockType>Outer</ns2:blockType>
-										<ns2:informationCareProviderId>`+careProviderId+`</ns2:informationCareProviderId>
+										<ns2:informationCareProviderId>` + careProviderId + `</ns2:informationCareProviderId>
 										<ns2:patientId>
 											<ns2:root>1.2.752.129.2.1.3.1</ns2:root>
-											<ns2:extension>`+ssn+`</ns2:extension>
+											<ns2:extension>` + ssn + `</ns2:extension>
 										</ns2:patientId>
 										<ns2:ownerId>SERIALNUMBER=SE5565594230-BLM, CN=ws.sparradmin.inera.se, O=Inera AB, L=Stockholm, C=SE</ns2:ownerId>
 									</ns2:blocks>
-								<ns2:nextCreatedOnOrAfter>`+currentTime+`</ns2:nextCreatedOnOrAfter>
-								<ns2:latestCancellation>`+latestCancellation+`</ns2:latestCancellation>
+								<ns2:nextCreatedOnOrAfter>` + currentTime + `</ns2:nextCreatedOnOrAfter>
+								<ns2:latestCancellation>` + latestCancellation + `</ns2:latestCancellation>
 								</ns3:blockHeader>
 							</ns3:GetBlocksResponse>
 							</S:Body>
-						</S:Envelope>`)
+						</S:Envelope>`))
 		}
 	} else {
-		fmt.Printf("Failed to bind xml, %v", err)
-		c.AbortWithError(400, err)
+		fmt.Printf("Failed to bind xml, %v\n", err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("failed to marshal body into xml"))
 	}
 }
