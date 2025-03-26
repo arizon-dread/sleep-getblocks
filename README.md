@@ -2,7 +2,7 @@
 
 * Exempel på att starta container:
 ```
-docker run -p 8080:8080 sleep-endpoint:v0.1
+docker run -p 8080:8080 sleep-endpoint:v0.2
 ```
 
 Exempel på att curla den:
