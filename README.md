@@ -7,7 +7,7 @@ docker run -p 8080:8080 sleep-endpoint:v0.2
 
 Exempel på att curla den:
 ```
-curl http://localhost:8080/GetBlocks -d '<?xml version="1.0"?>
+curl http://localhost:8080/getblocks -d '<?xml version="1.0"?>
 <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
 	<s:Header>
 		<h:LogicalAddress xmlns:h="urn:riv:itintegration:registry:1" xmlns="urn:riv:itintegration:registry:1">SE165565594230-1000</h:LogicalAddress>

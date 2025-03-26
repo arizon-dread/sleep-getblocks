@@ -46,7 +46,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", healthz)
 	mux.HandleFunc("POST /sleep", sleep)
-	mux.HandleFunc("POST /GetBlocks", getBlocks)
+	mux.HandleFunc("POST /getblocks", getBlocks)
 	http.ListenAndServe(":8080", mux)
 }
 
