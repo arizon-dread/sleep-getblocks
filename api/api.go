@@ -37,7 +37,7 @@ func Sleep(w http.ResponseWriter, r *http.Request) {
 	jsonData := &models.Sleep{}
 	if err = json.Unmarshal(body, jsonData); err == nil {
 		if jsonData.Seconds >= 0 {
-			log.Println("got a positive int")
+			log.Printf("setting delay to: %ds\n", delay)
 			delay = jsonData.Seconds
 			w.Write([]byte(fmt.Sprintf("setting delay to %vs", delay)))
 		} else {

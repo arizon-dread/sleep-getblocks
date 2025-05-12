@@ -3,6 +3,7 @@ LABEL MAINTAINER github.com/arizon-dread
 
 WORKDIR /usr/local/go/src/github.com/arizon-dread/sleep-getblocks
 COPY models ./models
+COPY api ./api
 COPY main.go go.mod go.sum ./
 
 RUN apk update && apk add --no-cache git
